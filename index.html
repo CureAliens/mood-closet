@@ -254,12 +254,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 
-const SUPABASE_URL = "https://baebtehmcyigjjsxnwkh.supabase.co";
-const SUPABASE_KEY = "sb_publishable_L7NNIjuiexEhN-W5wwl8eA_rE1czl97";
+alert("Before Supabase");
 
-const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
+const SUPABASE_URL = "https://baebtehmcyigjjsxnwkh.supabase.co";
+
+alert("URL loaded");
 );
 
 alert("Supabase is connected!");
