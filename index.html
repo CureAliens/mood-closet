@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mood Closet</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Georgia, serif;
+            background: #f4f0eb;
+            color: #2c2725;
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 20px 30px;
+        }
+
+        header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 17px;
+            color: #756d68;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .mood-title {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 25px;
+        }
+
+        .moods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 14px;
+            margin-bottom: 40px;
+        }
+
+        .mood-button {
+            border: 1px solid #c8beb7;
+            background: #fffdfb;
+            padding: 18px 12px;
+            border-radius: 12px;
+            font-family: Georgia, serif;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .mood-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .mood-button.selected {
+            background: #2c2725;
+            color: white;
+        }
+
+        .generate {
+            display: block;
+            margin: 0 auto 40px;
+            border: none;
+            background: #2c2725;
+            color: white;
+            padding: 16px 35px;
+            border-radius: 30px;
+            font-family: Georgia, serif;
+            font-size: 17px;
+            cursor: pointer;
+        }
+
+        .generate:hover {
+            opacity: 0.85;
+        }
+
+        .outfit {
+            background: #fffdfb;
+            border-radius: 18px;
+            padding: 30px;
+            margin-bottom: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+        }
+
+        .outfit h2 {
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .item {
+            padding: 15px;
+            border-bottom: 1px solid #e5dfda;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item-category {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8b817a;
+        }
+
+        .item-name {
+            font-size: 19px;
+            margin-top: 5px;
+        }
+
+        .empty {
+            text-align: center;
+            color: #8b817a;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>✦ Mood Closet ✦</h1>
+    <p>Dress for how you feel.</p>
+</header>
+
+<div class="container">
+
+    <h2 class="mood-title">What mood are you feeling?</h2>
+
+    <div class="moods">
+
+        <button class="mood-button" onclick="selectMood('dark')">
+            🖤 Dark
+        </button>
+
+        <button class="mood-button" onclick="selectMood('romantic')">
+            🌹 Romantic
+        </button>
+
+        <button class="mood-button" onclick="selectMood('earthy')">
+            🌿 Earthy
+        </button>
+
+        <button class="mood-button" onclick="selectMood('cozy')">
+            🧸 Cozy
+        </button>
+
+        <button class="mood-button" onclick="selectMood('feminine')">
+            🎀 Feminine
+        </button>
+
+        <button class="mood-button" onclick="selectMood('academic')">
+            📚 Academic
+        </button>
+
+        <button class="mood-button" onclick="selectMood('ethereal')">
+            🌙 Ethereal
+        </button>
+
+        <button class="mood-button" onclick="selectMood('sexy')">
+            🔥 Sexy
+        </button>
+
+    </div>
+
+    <button class="generate" onclick="generateOutfit()">
+        🎲 Surprise Me
+    </button>
+
+    <div class="outfit">
+
+        <h2>Your Outfit</h2>
+
+        <div id="outfitResults">
+            <p class="empty">
+                Choose a mood and press "Surprise Me."
+            </p>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+    let selectedMood = null;
+
+    const clothes = [
+
+        {
+            name: "Black Lace Top",
+            category: "Top",
+            moods: ["dark", "romantic", "sexy"]
+        },
+
+        {
+            name: "Brown Knit Sweater",
+            category: "Top",
+            moods: ["earthy", "cozy", "academic"]
+        },
+
+        {
+            name: "Long Black Skirt",
+            category: "Bottom",
+            moods: ["dark", "romantic", "academic"]
+        },
+
+        {
+            name: "Blue Jeans",
+            category: "Bottom",
+            moods: ["cozy", "earthy", "casual"]
+        },
+
+        {
+            name: "Black Boots",
+            category: "Shoes",
+            moods: ["dark", "sexy", "academic"]
+        },
+
+        {
+            name: "Brown Leather Boots",
+            category: "Shoes",
+            moods: ["earthy", "cozy", "academic"]
+        },
+
+        {
+            name: "Silver Necklace",
+            category: "Jewelry",
+            moods: ["dark", "ethereal", "romantic"]
+        },
+
+        {
+            name: "Gold Hoop Earrings",
+            category: "Jewelry",
+            moods: ["feminine", "romantic", "sexy"]
+        },
+
+        {
+            name: "Black Leather Bag",
+            category: "Accessory",
+            moods: ["dark", "sexy", "academic"]
+        },
+
+        {
+            name: "Brown Shoulder Bag",
+            category: "Accessory",
+            moods: ["earthy", "cozy", "romantic"]
+        }
+
+    ];
+
+
+    function selectMood(mood) {
+
+        selectedMood = mood;
+
+        const buttons = document.querySelectorAll(".mood-button");
+
+        buttons.forEach(button => {
+            button.classList.remove("selected");
+        });
+
+        event.target.classList.add("selected");
+    }
+
+
+    function generateOutfit() {
+
+        const results = document.getElementById("outfitResults");
+
+        if (!selectedMood) {
+
+            results.innerHTML = `
+                <p class="empty">
+                    Choose a mood first.
+                </p>
+            `;
+
+            return;
+        }
+
+        const matchingItems = clothes.filter(item =>
+            item.moods.includes(selectedMood)
+        );
+
+        if (matchingItems.length === 0) {
+
+            results.innerHTML = `
+                <p class="empty">
+                    I don't have enough items for this mood yet.
+                </p>
+            `;
+
+            return;
+        }
+
+        const categories = [
+            "Top",
+            "Bottom",
+            "Shoes",
+            "Jewelry",
+            "Accessory"
+        ];
+
+        let outfit = [];
+
+        categories.forEach(category => {
+
+            const options = matchingItems.filter(
+                item => item.category === category
+            );
+
+            if (options.length > 0) {
+
+                const randomItem =
+                    options[Math.floor(Math.random() * options.length)];
+
+                outfit.push(randomItem);
+
+            }
+
+        });
+
+        results.innerHTML = "";
+
+        outfit.forEach(item => {
+
+            const div = document.createElement("div");
+
+            div.className = "item";
+
+            div.innerHTML = `
+                <div class="item-category">
+                    ${item.category}
+                </div>
+
+                <div class="item-name">
+                    ${item.name}
+                </div>
+            `;
+
+            results.appendChild(div);
+
+        });
+
+    }
+
+</script>
+
+</body>
+</html>
