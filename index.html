@@ -263,6 +263,10 @@ const supabase = window.supabase.createClient(
     SUPABASE_KEY
 );
 
+        function openAddClothing() {
+    document.getElementById("addClothingForm").style.display = "block";
+}
+    
         let selectedMood = null;
 
     const clothes = [
