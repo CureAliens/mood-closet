@@ -272,6 +272,7 @@ alert("After createClient");
 }
 
         async function saveClothing() {
+async function saveClothing() {
 
     const photo = document.getElementById("clothingPhoto").files[0];
     const name = document.getElementById("clothingName").value;
@@ -284,6 +285,71 @@ alert("After createClient");
     if (!photo || !name) {
         alert("Please choose a photo and enter a name.");
         return;
+    }
+
+    try {
+
+        // Make sure you are logged in
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            alert("You are not logged in.");
+            return;
+        }
+
+        // Create a unique filename
+        const fileName =
+            user.id + "/" + Date.now() + "-" + photo.name;
+
+        // Upload photo
+        const { error: uploadError } = await supabase.storage
+            .from("clothing-images")
+            .upload(fileName, photo);
+
+        if (uploadError) {
+            alert("Photo upload failed: " + uploadError.message);
+            return;
+        }
+
+        // Get public photo URL
+        const { data: publicUrlData } = supabase.storage
+            .from("clothing-images")
+            .getPublicUrl(fileName);
+
+        const imageUrl = publicUrlData.publicUrl;
+
+        // Save clothing information
+        const { error: databaseError } = await supabase
+            .from("clothing_item")
+            .insert({
+                name: name,
+                category: category,
+                moods: moods,
+                image_url: imageUrl
+            });
+
+        if (databaseError) {
+            alert("Clothing information failed to save: " + databaseError.message);
+            return;
+        }
+
+        alert("Clothing item saved successfully!");
+
+        // Clear form
+        document.getElementById("clothingPhoto").value = "";
+        document.getElementById("clothingName").value = "";
+
+        document.querySelectorAll(".mood-tag").forEach(checkbox => {
+            checkbox.checked = false;
+        });
+
+    } catch (error) {
+
+        alert("Something went wrong: " + error.message);
+
+    }
+}
+   
     }
 
     alert("Your clothing item is ready to save!");
