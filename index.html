@@ -104,7 +104,7 @@
         }
 
         .item {
-            padding: 15px;
+            padding: 20px 15px;
             border-bottom: 1px solid #e5dfda;
         }
 
@@ -124,7 +124,27 @@
             margin-top: 5px;
         }
 
+        .item-color {
+            font-size: 14px;
+            color: #756d68;
+            margin-top: 5px;
+        }
+
+        .item-image {
+            width: 100%;
+            max-width: 300px;
+            display: block;
+            margin: 15px auto 0;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
         .empty {
+            text-align: center;
+            color: #8b817a;
+        }
+
+        .loading {
             text-align: center;
             color: #8b817a;
         }
@@ -138,42 +158,41 @@
     <p>Dress for how you feel.</p>
 </header>
 
+<div class="container">
 
-</div>
-    
     <h2 class="mood-title">What mood are you feeling?</h2>
 
     <div class="moods">
 
-        <button class="mood-button" onclick="selectMood('dark')">
+        <button class="mood-button" onclick="selectMood('dark', this)">
             🖤 Dark
         </button>
 
-        <button class="mood-button" onclick="selectMood('romantic')">
+        <button class="mood-button" onclick="selectMood('romantic', this)">
             🌹 Romantic
         </button>
 
-        <button class="mood-button" onclick="selectMood('earthy')">
+        <button class="mood-button" onclick="selectMood('earthy', this)">
             🌿 Earthy
         </button>
 
-        <button class="mood-button" onclick="selectMood('cozy')">
+        <button class="mood-button" onclick="selectMood('cozy', this)">
             🧸 Cozy
         </button>
 
-        <button class="mood-button" onclick="selectMood('feminine')">
+        <button class="mood-button" onclick="selectMood('feminine', this)">
             🎀 Feminine
         </button>
 
-        <button class="mood-button" onclick="selectMood('academic')">
+        <button class="mood-button" onclick="selectMood('academic', this)">
             📚 Academic
         </button>
 
-        <button class="mood-button" onclick="selectMood('ethereal')">
+        <button class="mood-button" onclick="selectMood('ethereal', this)">
             🌙 Ethereal
         </button>
 
-        <button class="mood-button" onclick="selectMood('sexy')">
+        <button class="mood-button" onclick="selectMood('sexy', this)">
             🔥 Sexy
         </button>
 
@@ -188,8 +207,8 @@
         <h2>Your Outfit</h2>
 
         <div id="outfitResults">
-            <p class="empty">
-                Choose a mood and press "Surprise Me."
+            <p class="loading">
+                Loading your closet...
             </p>
         </div>
 
@@ -197,195 +216,164 @@
 
 </div>
 
+
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 
-const SUPABASE_URL = "https://baebtehmcyigjjsxnwkh.supabase.co";
-const SUPABASE_KEY = "sb_publishable_L7NNIjuiexEhN-W5wwl8eA_rE1czl97";
+    /* ================================
+       SUPABASE CONNECTION
+       ================================ */
 
-alert("Before createClient");
+    const SUPABASE_URL =
+        "https://baebtehmcyigjjsxnwkh.supabase.co";
 
-const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
+    const SUPABASE_KEY =
+        "sb_publishable_L7NNIjuiexEhN-W5wwl8eA_rE1czl97";
 
-alert("After createClient");
-    
-        function openAddClothing() {
-    document.getElementById("addClothingForm").style.display = "block";
-}
+    const supabaseClient = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
-        async function saveClothing() {
-async function saveClothing() {
 
-    const photo = document.getElementById("clothingPhoto").files[0];
-    const name = document.getElementById("clothingName").value;
-    const category = document.getElementById("clothingCategory").value;
+    /* ================================
+       APP VARIABLES
+       ================================ */
 
-    const moods = Array.from(
-        document.querySelectorAll(".mood-tag:checked")
-    ).map(checkbox => checkbox.value);
+    let selectedMood = null;
+    let clothes = [];
 
-    if (!photo || !name) {
-        alert("Please choose a photo and enter a name.");
-        return;
-    }
 
-    try {
+    /* ================================
+       LOAD CLOTHING FROM SUPABASE
+       ================================ */
 
-        // Make sure you are logged in
-        const { data: { user } } = await supabase.auth.getUser();
+    async function loadClothes() {
 
-        if (!user) {
-            alert("You are not logged in.");
-            return;
-        }
+        const results = document.getElementById("outfitResults");
 
-        // Create a unique filename
-        const fileName =
-            user.id + "/" + Date.now() + "-" + photo.name;
+        results.innerHTML = `
+            <p class="loading">
+                Loading your closet...
+            </p>
+        `;
 
-        // Upload photo
-        const { error: uploadError } = await supabase.storage
-            .from("clothing-images")
-            .upload(fileName, photo);
-
-        if (uploadError) {
-            alert("Photo upload failed: " + uploadError.message);
-            return;
-        }
-
-        // Get public photo URL
-        const { data: publicUrlData } = supabase.storage
-            .from("clothing-images")
-            .getPublicUrl(fileName);
-
-        const imageUrl = publicUrlData.publicUrl;
-
-        // Save clothing information
-        const { error: databaseError } = await supabase
+        const { data, error } = await supabaseClient
             .from("clothing_item")
-            .insert({
-                name: name,
-                category: category,
-                moods: moods,
-                image_url: imageUrl
-            });
+            .select("*");
 
-        if (databaseError) {
-            alert("Clothing information failed to save: " + databaseError.message);
+        if (error) {
+
+            console.error("Supabase error:", error);
+
+            results.innerHTML = `
+                <p class="empty">
+                    I couldn't load your closet.
+                </p>
+            `;
+
             return;
         }
 
-        alert("Clothing item saved successfully!");
+        clothes = data.map(item => {
 
-        // Clear form
-        document.getElementById("clothingPhoto").value = "";
-        document.getElementById("clothingName").value = "";
+            let moodList = [];
 
-        document.querySelectorAll(".mood-tag").forEach(checkbox => {
-            checkbox.checked = false;
+            if (item.moods) {
+
+                moodList = item.moods
+                    .split(",")
+                    .map(mood => mood.trim().toLowerCase());
+
+            }
+
+            return {
+                id: item.id,
+                name: item.name,
+                category: item.category,
+                color: item.color,
+                moods: moodList,
+                image_url: item.image_url
+            };
+
         });
 
-    } catch (error) {
+        results.innerHTML = `
+            <p class="empty">
+                Choose a mood and press "Surprise Me."
+            </p>
+        `;
 
-        alert("Something went wrong: " + error.message);
-
+        console.log("Loaded clothing:", clothes);
     }
-}
-   
-    }
-
-    alert("Your clothing item is ready to save!");
-
-}
-    
-        let selectedMood = null;
-
-    const clothes = [
-
-        {
-            name: "Black Lace Top",
-            category: "Top",
-            moods: ["dark", "romantic", "sexy"]
-        },
-
-        {
-            name: "Brown Knit Sweater",
-            category: "Top",
-            moods: ["earthy", "cozy", "academic"]
-        },
-
-        {
-            name: "Long Black Skirt",
-            category: "Bottom",
-            moods: ["dark", "romantic", "academic"]
-        },
-
-        {
-            name: "Blue Jeans",
-            category: "Bottom",
-            moods: ["cozy", "earthy", "casual"]
-        },
-
-        {
-            name: "Black Boots",
-            category: "Shoes",
-            moods: ["dark", "sexy", "academic"]
-        },
-
-        {
-            name: "Brown Leather Boots",
-            category: "Shoes",
-            moods: ["earthy", "cozy", "academic"]
-        },
-
-        {
-            name: "Silver Necklace",
-            category: "Jewelry",
-            moods: ["dark", "ethereal", "romantic"]
-        },
-
-        {
-            name: "Gold Hoop Earrings",
-            category: "Jewelry",
-            moods: ["feminine", "romantic", "sexy"]
-        },
-
-        {
-            name: "Black Leather Bag",
-            category: "Accessory",
-            moods: ["dark", "sexy", "academic"]
-        },
-
-        {
-            name: "Brown Shoulder Bag",
-            category: "Accessory",
-            moods: ["earthy", "cozy", "romantic"]
-        }
-
-    ];
 
 
-    function selectMood(mood) {
+    /* ================================
+       MOOD SELECTION
+       ================================ */
+
+    function selectMood(mood, button) {
 
         selectedMood = mood;
 
-        const buttons = document.querySelectorAll(".mood-button");
+        const buttons =
+            document.querySelectorAll(".mood-button");
 
         buttons.forEach(button => {
             button.classList.remove("selected");
         });
 
-        event.target.classList.add("selected");
+        button.classList.add("selected");
     }
 
 
+    /* ================================
+       CREATE PUBLIC IMAGE URL
+       ================================ */
+
+    function getImageUrl(imagePath) {
+
+        if (!imagePath) {
+            return null;
+        }
+
+        /*
+           If Excel contains a complete URL,
+           use it directly.
+        */
+
+        if (
+            imagePath.startsWith("http://") ||
+            imagePath.startsWith("https://")
+        ) {
+            return imagePath;
+        }
+
+        /*
+           Otherwise assume it is a filename
+           inside the clothing-images bucket.
+        */
+
+        const { data } = supabaseClient
+            .storage
+            .from("clothing-images")
+            .getPublicUrl(imagePath);
+
+        return data.publicUrl;
+    }
+
+
+    /* ================================
+       GENERATE OUTFIT
+       ================================ */
+
     function generateOutfit() {
 
-        const results = document.getElementById("outfitResults");
+        const results =
+            document.getElementById("outfitResults");
+
 
         if (!selectedMood) {
 
@@ -398,41 +386,78 @@ async function saveClothing() {
             return;
         }
 
-        const matchingItems = clothes.filter(item =>
-            item.moods.includes(selectedMood)
-        );
 
-        if (matchingItems.length === 0) {
+        if (clothes.length === 0) {
 
             results.innerHTML = `
                 <p class="empty">
-                    I don't have enough items for this mood yet.
+                    Your closet is empty.
                 </p>
             `;
 
             return;
         }
 
+
+        /*
+           Find clothing matching the
+           selected mood.
+        */
+
+        const matchingItems = clothes.filter(item =>
+            item.moods.includes(selectedMood)
+        );
+
+
+        if (matchingItems.length === 0) {
+
+            results.innerHTML = `
+                <p class="empty">
+                    I don't have any items tagged
+                    with this mood yet.
+                </p>
+            `;
+
+            return;
+        }
+
+
+        /*
+           These are the clothing categories
+           used to build an outfit.
+        */
+
         const categories = [
-            "Top",
-            "Bottom",
-            "Shoes",
-            "Jewelry",
-            "Accessory"
+            "top",
+            "bottom",
+            "dress",
+            "shoes",
+            "jewelry",
+            "accessory"
         ];
+
 
         let outfit = [];
 
+
+        /*
+           Choose one random item from each
+           available category.
+        */
+
         categories.forEach(category => {
 
-            const options = matchingItems.filter(
-                item => item.category === category
+            const options = matchingItems.filter(item =>
+                item.category.toLowerCase() === category
             );
+
 
             if (options.length > 0) {
 
                 const randomItem =
-                    options[Math.floor(Math.random() * options.length)];
+                    options[
+                        Math.floor(Math.random() * options.length)
+                    ];
 
                 outfit.push(randomItem);
 
@@ -440,15 +465,28 @@ async function saveClothing() {
 
         });
 
+
+        /*
+           Display the outfit.
+        */
+
         results.innerHTML = "";
+
 
         outfit.forEach(item => {
 
-            const div = document.createElement("div");
+            const div =
+                document.createElement("div");
 
             div.className = "item";
 
+
+            const imageUrl =
+                getImageUrl(item.image_url);
+
+
             div.innerHTML = `
+
                 <div class="item-category">
                     ${item.category}
                 </div>
@@ -456,13 +494,61 @@ async function saveClothing() {
                 <div class="item-name">
                     ${item.name}
                 </div>
+
+                ${
+                    item.color
+                        ? `
+                            <div class="item-color">
+                                ${item.color}
+                            </div>
+                          `
+                        : ""
+                }
+
+                ${
+                    imageUrl
+                        ? `
+                            <img
+                                class="item-image"
+                                src="${imageUrl}"
+                                alt="${item.name}"
+                            >
+                          `
+                        : ""
+                }
+
             `;
+
 
             results.appendChild(div);
 
         });
 
+
+        /*
+           If there weren't enough categories
+           to make an outfit, tell the user.
+        */
+
+        if (outfit.length === 0) {
+
+            results.innerHTML = `
+                <p class="empty">
+                    I found items for this mood,
+                    but not enough to create an outfit yet.
+                </p>
+            `;
+
+        }
+
     }
+
+
+    /* ================================
+       START THE APP
+       ================================ */
+
+    loadClothes();
 
 </script>
 
