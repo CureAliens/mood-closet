@@ -139,7 +139,10 @@
 </header>
 
 <div class="container">
-
+    <button class="generate" onclick="openAddClothing()">
+    ＋ Add Clothing
+</button>
+    
     <h2 class="mood-title">What mood are you feeling?</h2>
 
     <div class="moods">
@@ -207,6 +210,10 @@ const supabase = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
+
+    function openAddClothing() {
+    alert("Add Clothing form coming next!");
+}
     
     let selectedMood = null;
 
