@@ -142,6 +142,58 @@
     <button class="generate" onclick="openAddClothing()">
     ＋ Add Clothing
 </button>
+
+<div id="addClothingForm" style="display:none; background:#fffdfb; padding:25px; border-radius:18px; margin-bottom:40px;">
+
+    <h2>Add Clothing</h2>
+
+    <label>
+        Photo
+        <input type="file" id="clothingPhoto" accept="image/*">
+    </label>
+
+    <br><br>
+
+    <label>
+        Name
+        <input type="text" id="clothingName" placeholder="e.g. Black lace top">
+    </label>
+
+    <br><br>
+
+    <label>
+        Category
+        <select id="clothingCategory">
+            <option value="Top">Top</option>
+            <option value="Bottom">Bottom</option>
+            <option value="Dress">Dress</option>
+            <option value="Shoes">Shoes</option>
+            <option value="Jewelry">Jewelry</option>
+            <option value="Accessory">Accessory</option>
+            <option value="Outerwear">Outerwear</option>
+        </select>
+    </label>
+
+    <br><br>
+
+    <p>What moods does this item fit?</p>
+
+    <label><input type="checkbox" value="dark" class="mood-tag"> 🖤 Dark</label><br>
+    <label><input type="checkbox" value="romantic" class="mood-tag"> 🌹 Romantic</label><br>
+    <label><input type="checkbox" value="earthy" class="mood-tag"> 🌿 Earthy</label><br>
+    <label><input type="checkbox" value="cozy" class="mood-tag"> 🧸 Cozy</label><br>
+    <label><input type="checkbox" value="feminine" class="mood-tag"> 🎀 Feminine</label><br>
+    <label><input type="checkbox" value="academic" class="mood-tag"> 📚 Academic</label><br>
+    <label><input type="checkbox" value="ethereal" class="mood-tag"> 🌙 Ethereal</label><br>
+    <label><input type="checkbox" value="sexy" class="mood-tag"> 🔥 Sexy</label>
+
+    <br>
+
+    <button class="generate" onclick="saveClothing()">
+        Save Clothing
+    </button>
+
+</div>
     
     <h2 class="mood-title">What mood are you feeling?</h2>
 
@@ -211,11 +263,7 @@ const supabase = window.supabase.createClient(
     SUPABASE_KEY
 );
 
-    function openAddClothing() {
-    alert("Add Clothing form coming next!");
-}
-    
-    let selectedMood = null;
+        let selectedMood = null;
 
     const clothes = [
 
