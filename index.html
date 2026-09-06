@@ -266,6 +266,25 @@ const supabase = window.supabase.createClient(
         function openAddClothing() {
     document.getElementById("addClothingForm").style.display = "block";
 }
+
+        async function saveClothing() {
+
+    const photo = document.getElementById("clothingPhoto").files[0];
+    const name = document.getElementById("clothingName").value;
+    const category = document.getElementById("clothingCategory").value;
+
+    const moods = Array.from(
+        document.querySelectorAll(".mood-tag:checked")
+    ).map(checkbox => checkbox.value);
+
+    if (!photo || !name) {
+        alert("Please choose a photo and enter a name.");
+        return;
+    }
+
+    alert("Your clothing item is ready to save!");
+
+}
     
         let selectedMood = null;
 
